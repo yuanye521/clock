@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, initial-scale=1, maximum-scale=1, user-scalable=no">    
+    <title>clock</title>       
+    <!--[if lt IE 9]>
+      <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <canvas id="myCanvas" width="1000" height="1000" style="border: 1px solid red;">抱歉，你的浏览器不支持canvas</canvas> 
+  </body>
+  
+  <script type="text/javascript">
+    var myCanvas = document.getElementById('myCanvas');
+    var context = myCanvas.getContext('2d');
+    //将坐标原点移到画布中间位置
+    context.translate(300,300);
+
+    var r1 = 105; //外圆半径
+    var r2 = r1-5;  //内圆半径
+    var r3 = r1-20;  //指针旋转半径
+    var r4 = 4;  //表盘中心半径
+    var hl = 0.7*r3;  //时针长度
+    var ml = 0.9*r3;  //分针长度
+    var sl = r3;  //秒针长度
+    var rad = Math.PI/180;  //1弧度
+
+    //数字样式
+    context.font = '20px Arial';  
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+
+    //1-12点的坐标
+    var clockArr = [{
+        clock:12,
+        coordinateX:0,
+        coordinateY:-r3,
+      },{
+        clock:6,
+        coordinateX:0,
+        coordinateY:r3,
+      },{
+        clock:1,
+        coordinateX:0.5*r3,
+        coordinateY:-0.5*r3*Math.sqrt(3),
+      },{
+        clock:7,
+        coordinateX:-0.5*r3,
+        coordinateY:0.5*r3*Math.sqrt(3),
+      },{
+        clock:2,
+        coordinateX:0.5*r3*Math.sqrt(3),
+        coordinateY:-0.5*r3,
+      },{
+        clock:8,
+        coordinateX:-0.5*r3*Math.sqrt(3),
+        coordinateY:0.5*r3,
+      },{
+        clock:3,
+        coordinateX:r3,
+        coordinateY:0,
+      },{
+        clock:9,
+        coordinateX:-r3,
+        coordinateY:0,
+      },{
+        clock:4,
+        coordinateX:0.5*r3*Math.sqrt(3),
+        coordinateY:0.5*r3,
+      },{
+        clock:10,
+        coordinateX:-0.5*r3*Math.sqrt(3),
+        coordinateY:-0.5*r3,
+      },{
+        clock:5,
+        coordinateX:0.5*r3,
+        coordinateY:0.5*r3*Math.sqrt(3),
+      },{
+        clock:11,
+        coordinateX:-0.5*r3,
+        coordinateY:-0.5*r3*Math.sqrt(3),
+      }
+    ];
+    
+    //绘制表盘
+    function drawDial(){     
+      //清空重绘
+      context.clearRect(-300,-300,1000,1000);  
+      //获取当前时间
+      var myDate = new Date();
+      var h = myDate.getHours();  // 0-23
+      var m = myDate.getMinutes();  // 0-59
+      var s = myDate.getSeconds();  // 0-59      
+      //外圆
+      context.beginPath();
+      context.arc(0,0,r1,0,2*Math.PI);
+      context.stroke();
+      //内圆
+      context.beginPath();
+      context.arc(0,0,r2,0,2*Math.PI);
+      context.stroke();
+      //表盘中心
+      context.beginPath();
+      context.arc(0,0,r4,0,2*Math.PI);
+      context.fill();
+      //画数字
+      for(k in clockArr){
+        context.fillText(clockArr[k].clock,clockArr[k].coordinateX,clockArr[k].coordinateY);
+      }      
+       //绘制刻度
+      for(var i=0; i < 60; i++){
+        context.lineWidth = 1;    
+        if( i%5 == 0){
+          context.lineWidth = 2;      
+        } 
+        context.beginPath();        
+        context.rotate(i*6*rad);
+        context.moveTo(0,-(r2-8));       
+        context.lineTo(0,-r2);
+        context.stroke();       
+        //rotate会将整个坐标系都旋转，转完一次之后将坐标系再转回来
+        context.rotate(-i*6*rad); 
+      }      
+      //绘制时针
+      context.beginPath();
+      context.lineWidth = 2;
+      //时针旋转角度
+      var hRad = (h+m/60)*30*rad;
+      context.rotate(hRad);
+      context.moveTo(0,0);
+      context.lineTo(0,-hl);
+      context.stroke();
+      //rotate会将整个坐标系都旋转，转完一次之后将坐标系再转回来
+      context.rotate(-hRad);
+      //绘制分针
+      context.beginPath();
+      context.lineWidth = 2;
+      //分针旋转角度
+      var mRad = (m+s/60)*6*rad;
+      context.rotate(mRad);
+      context.moveTo(0,0);
+      context.lineTo(0,-ml);
+      context.stroke();
+      //rotate会将整个坐标系都旋转，转完一次之后将坐标系再转回来
+      context.rotate(-mRad);     
+      //绘制秒针
+      context.beginPath();
+      context.lineWidth = 1;     
+      //秒针旋转角度
+      var sRad = s*6*rad;
+      context.rotate(sRad);
+      context.moveTo(0,0); 
+      context.lineTo(0,-sl);
+      context.stroke();
+      //rotate会将整个坐标系都旋转，转完一次之后将坐标系再转回来
+      context.rotate(-sRad);
+    };
+
+    drawDial();
+   
+    //每隔一秒调用一次 
+    setInterval(drawDial,1000);  
+
+  </script>
+</html>
